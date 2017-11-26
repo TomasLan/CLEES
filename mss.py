@@ -7,8 +7,22 @@
 # ----------------------------
 # Works on both RPi and OPi
 
-VERS = "0.5.1"
+VERS = "0.5.2"    # Added Support for "mtlo" (=model train layout object) = Turnouts
 
+
+
+
+# Controlling Model Train Layout Objects
+#
+# ---- Controlling Turnouts ----
+# Call:
+#   http://172.16.1.14/mss?object=turnout&index=0&cmd=close
+#
+#       object=turnout  Identifies layout object type
+#       index=0         Index 0.. of the object position in the Turnout list defined in the mtlo file
+#       cmd=close       Operation to perform on that object
+#
+#
 # Low level commands
 #
 # ---- Controlling PWMs  ----
@@ -60,14 +74,18 @@ VERS = "0.5.1"
 
 DBGPRNT = 'Y'  # 'Y' = on,  '' = off to prevent debug printouts
 
+# --- General libs ---
 import socket
 import select
 import time
-import mss_iomodule
 import string
 from BaseHTTPServer import BaseHTTPRequestHandler
 from StringIO import StringIO
 from urlparse import urlparse, parse_qs
+
+# --- Private Libs
+import mss_iomodule
+import mss_mtlo
 
 
 class HTTPRequest(BaseHTTPRequestHandler):
@@ -154,7 +172,12 @@ ERROR_TEXT = ['',
               'GETparam "op" must be "set" or "get"',        #6
               'GETparam "gpiostate" is missing',             #7
               'GETparam "iomodule" is missing',              #8
-              'GETparam "iovalue" is missing'                #9
+              'GETparam "iovalue" is missing',               #9
+              'GETparam "index" is missing',                 #10
+              'GETparam "cmd" is missing',                   #11
+              'GETparam "cmd" must be "C" or "T"',           #12
+              
+              'Unknow Error'
               ]
 # -------------------------------------------------------------
 
@@ -272,11 +295,25 @@ def pcf8574Acmd ():
     else:
         return (6) # Error=6
       
-
-    
-
 # -------------------------------------------------------------
 
+
+# --- Object command from client ------------------------------
+def turnoutcmd():
+    global mss_returnvalue
+    # parse incomming command and to contol turnouts
+    if 'index' not in mss_command : return (10) # Error=10
+    turnout_index = int(mss_command['index'][0]);
+    if 'cmd' not in mss_command : return (11) # Error=11
+    turnout_cmd = mss_command['cmd'][0];
+    if turnout_cmd == 'C':
+        return (mss_mtlo.turnout_close(turnout_index))
+    elif turnout_cmd == 'T':
+        return (mss_mtlo.turnout_throw(turnout_index))
+    else:     
+        return(12) # Error=12
+
+# -------------------------------------------------------------
 
 
 
@@ -293,6 +330,9 @@ logtxt ("Starting MSS Ver:%s" %(VERS))
 ErrTxt = mss_iomodule.IOmodule_Init()
 if ErrTxt != "" :
     logerror (ErrTxt)
+
+# --- Init MTLO
+mss_mtlo.init()
 
 # --- Init Socket
 host = '' 
@@ -314,7 +354,10 @@ try:
     logtxt ("MSS Running")
     while ('mssshutdown' not in mss_command):
 
-        time.sleep (0.0125)  # This loop will run at 80Hz
+        time.sleep (0.0125)  # This while loop will run at 80Hz
+
+        mss_mtlo.call_80Hz() 
+
         mss_command_error = 0
         mss_returnvalue = ''
         mss_txt = ''
@@ -353,7 +396,10 @@ try:
                             if mss_command['device'][0] == 'gpio'     : mss_command_error = gpiocmd()
                             if mss_command['device'][0] == 'pcf8574'  : mss_command_error = pcf8574cmd()
                             if mss_command['device'][0] == 'pcf8574A' : mss_command_error = pcf8574Acmd()
-                    except KeyboardInterrupt: 
+                        elif 'object' in mss_command :
+                            logsocket("Client request object="+mss_command['object'][0])
+                            if mss_command['object'][0] == 'turnout'  : mss_command_error = turnoutcmd()
+                    except: 
                         logsocket("Client request URL format incorrect")
             else:  # request has error
                 logsocket("Client request failed")
@@ -371,7 +417,6 @@ try:
                 client_conection_sock.sendall(mss_return)
             else:
                 # upon error in command then return a 404 (page not found)
-                if DBGPRNT == 'Y': print "Returning 404"
                 mss_return  = "HTTP/1.0 404 Not Found\n"
                 mss_return += "Content-Type: text/html\n\n"
                 mss_return += "<html><head><title>MSS Error</title></head><body>"
