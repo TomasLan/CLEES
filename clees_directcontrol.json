@@ -1,0 +1,16 @@
+{
+    "reportmessages" : [
+        {
+          "listenfor": "rep/b/120",
+          "whenmsg"  : "activated",
+          "sendto"   : "cmd/t/301",
+          "withmsg"  : "close" 
+        },
+        {
+          "listenfor": "rep/b/121",
+          "whenmsg"  : "activated",
+          "sendto"   : "cmd/t/301",
+          "withmsg"  : "throw" 
+        }
+    ]
+}

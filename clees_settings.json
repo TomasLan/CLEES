@@ -1,0 +1,12 @@
+{
+    "stationfullname"         : "Holmfors",
+    "stationshortname"        : "hfs",
+    "mqtt-broker-ipadress"    : "172.16.1.2",
+    "mqtt-broker-port"        : 1883,
+    "mqtt-broker-keep-alive"  : 30, 
+    "mqtt-qos"                : 0,
+    "systemledgpio"           : 22,
+    "systemledoutputobjectid" : "sysled",
+    "log-mqtt"                : 1,
+    "log-io"                  : 1
+}

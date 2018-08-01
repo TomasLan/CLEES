@@ -1,0 +1,69 @@
+{
+    "speedsteps" : 3,
+    "homepositiondelayonstart" : 0.8,
+    "turnouts" : [
+        {
+            "id"             : "301",
+            "homeposition"   : "C",
+            "inroute"        : 0,
+            "devicetype"     : "pca9685",
+            "devicenr"       : 0,
+            "pwmnr"          : 0,
+            "pwmwidthclosed" : 200,
+            "pwmwidththrown" : 450,
+            "slaveoutputid"  : "451" 
+        },
+        {
+            "id"             : "302",
+            "homeposition"   : "C",
+            "inroute"        : 0,
+            "devicetype"     : "pca9685",
+            "devicenr"       : 0,
+            "pwmnr"          : 1,
+            "pwmwidthclosed" : 200,
+            "pwmwidththrown" : 450,
+            "slaveoutputid"  : ""
+        }
+    ],
+    "buttons" : [
+        {
+            "id"             : "120",
+            "devicetype"     : "pcf8574A",
+            "devicenr"       : 0,
+            "pinnr"          : 0,
+            "inverted"       : 1
+        },
+        {
+            "id"             : "122",
+            "devicetype"     : "pcf8574A",
+            "devicenr"       : 0,
+            "pinnr"          : 7,
+            "inverted"       : 1
+        },
+        {
+            "id"             : "121",
+            "devicetype"     : "pcf8574",
+            "devicenr"       : 0,
+            "pinnr"          : 1,
+            "inverted"       : 1
+        }
+    ],
+    "outputs" : [
+        {
+            "id"             : "451",
+            "devicetype"     : "pcf8574A",
+            "devicenr"       : 0,
+            "pinnr"          : 6,
+            "inverted"       : 1,
+            "stateonstart"   : "deactivated"
+        },
+        {
+            "id"             : "sysled",
+            "devicetype"     : "pcf8574",
+            "devicenr"       : 0,
+            "pinnr"          : 7,
+            "inverted"       : 1,
+            "stateonstart"   : "deactivated"
+        }
+    ]    
+}
